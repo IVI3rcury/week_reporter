@@ -40,37 +40,19 @@ jobs:
           chmod +x weekly-log-green/start.sh
 
           cat > weekly-log-green/README.txt <<'EOF'
-          周报填报系统绿色版
+          周报填报系统绿色版 x86_64
 
-          一、启动方式
-
+          启动方式：
           ./start.sh
 
-          二、访问地址
+          访问地址：
+          填报端：http://服务器IP:3000/fill/new
+          汇总端：http://服务器IP:3000/summary
+          项目日志汇总：http://服务器IP:3000/summary/project-report
+          填报统计：http://服务器IP:3000/summary/attendance
+          选项维护：http://服务器IP:3000/summary/options
 
-          填报端：
-          http://服务器IP:3000/fill/new
-
-          汇总端：
-          http://服务器IP:3000/summary
-
-          项目日志汇总：
-          http://服务器IP:3000/summary/project-report
-
-          填报统计：
-          http://服务器IP:3000/summary/attendance
-
-          选项维护：
-          http://服务器IP:3000/summary/options
-
-          三、数据文件
-
-          weekly_log.db 会在首次运行时自动生成。
-          不要随便删除 weekly_log.db，否则历史填报数据会丢失。
-
-          四、停止程序
-
-          在运行窗口按 Ctrl + C。
+          数据库文件 weekly_log.db 会在首次运行时自动生成。
           EOF
 
           tar -czvf weekly-log-kylin-x86_64.tar.gz weekly-log-green
@@ -80,3 +62,59 @@ jobs:
         with:
           name: weekly-log-kylin-x86_64
           path: weekly-log-kylin-x86_64.tar.gz
+
+  build-aarch64:
+    runs-on: ubuntu-22.04-arm
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build release
+        run: cargo build --release
+
+      - name: Package green version
+        shell: bash
+        run: |
+          mkdir -p weekly-log-green
+
+          BIN_NAME=$(grep -m1 '^name' Cargo.toml | sed 's/name *= *"//' | sed 's/"//')
+          echo "Detected binary name: ${BIN_NAME}"
+
+          cp "target/release/${BIN_NAME}" weekly-log-green/weekly-log
+
+          cat > weekly-log-green/start.sh <<'EOF'
+          #!/bin/bash
+          cd "$(dirname "$0")"
+          ./weekly-log
+          EOF
+
+          chmod +x weekly-log-green/weekly-log
+          chmod +x weekly-log-green/start.sh
+
+          cat > weekly-log-green/README.txt <<'EOF'
+          周报填报系统绿色版 aarch64 / ARM64
+
+          启动方式：
+          ./start.sh
+
+          访问地址：
+          填报端：http://服务器IP:3000/fill/new
+          汇总端：http://服务器IP:3000/summary
+          项目日志汇总：http://服务器IP:3000/summary/project-report
+          填报统计：http://服务器IP:3000/summary/attendance
+          选项维护：http://服务器IP:3000/summary/options
+
+          数据库文件 weekly_log.db 会在首次运行时自动生成。
+          EOF
+
+          tar -czvf weekly-log-kylin-aarch64.tar.gz weekly-log-green
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-log-kylin-aarch64
+          path: weekly-log-kylin-aarch64.tar.gz
