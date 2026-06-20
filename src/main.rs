@@ -8,7 +8,6 @@ use chrono::Local;
 use rusqlite::{params, Connection, OptionalExtension};
 use serde::Deserialize;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
-use std::env;
 use std::sync::Mutex;
 
 const DB_PATH: &str = "weekly_log.db";
@@ -22,7 +21,7 @@ struct OptionItem {
     id: i64,
     label: String,
     is_active: bool,
-    sort_order: i64,
+    sort_order:i64,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -376,67 +375,6 @@ fn delete_option(conn: &Connection, kind: OptionKind, id: i64) -> std::result::R
     Ok(())
 }
 
-fn option_id(conn: &Connection, kind: OptionKind, label: &str) -> rusqlite::Result<i64> {
-    ensure_option(conn, kind, label)
-}
-
-fn maybe_seed_sample(conn: &Connection) -> rusqlite::Result<()> {
-    let should_seed = env::var("SEED_SAMPLE").unwrap_or_default() == "1";
-    if !should_seed {
-        return Ok(());
-    }
-
-    let log_count: i64 = conn.query_row("SELECT COUNT(*) FROM weekly_logs", [], |row| row.get(0))?;
-    if log_count > 0 {
-        return Ok(());
-    }
-
-    let persons = ["张三", "李四", "王二", "何仪周", "吴海玉", "王丽", "董向明"];
-    let projects = ["CH-20A", "2603", "2601", "002"];
-    let specialties = ["保障性", "六性", "适航性", "技术出版物设计"];
-
-    for name in persons {
-        ensure_option(conn, OptionKind::Person, name)?;
-    }
-    for project_no in projects {
-        ensure_option(conn, OptionKind::Project, project_no)?;
-    }
-    for name in specialties {
-        ensure_option(conn, OptionKind::Specialty, name)?;
-    }
-
-    let rows = vec![
-        (6, 1, "CH-20A", "保障性", "何仪周", "手册策划", "李四", "完成", "XXX", "手册策划"),
-        (6, 1, "CH-20A", "保障性", "何仪周", "模板编制", "李四", "完成", "XXX", "模板编制"),
-        (6, 1, "CH-20A", "保障性", "何仪周", "下发手册", "李四", "完成", "XXX", "下发手册"),
-        (6, 1, "CH-20A", "保障性", "何仪周", "手册排版", "张三", "完成", "无", "手册排版"),
-        (6, 1, "CH-20A", "六性", "吴海玉", "手册编制", "王二", "未完成", "XXX", "手册编制"),
-        (6, 1, "CH-20A", "六性", "吴海玉", "模板设计", "王二", "完成", "XXX", "模板设计"),
-        (6, 1, "2603", "六性", "吴海玉", "手册定稿", "李四", "完成", "XXX", "手册定稿"),
-        (6, 2, "2601", "适航性", "王丽", "完成方案编制", "张三", "完成", "无", "下发模板"),
-        (6, 2, "002", "适航性", "王丽", "法规研制", "李四", "未完成", "XXX", "继续"),
-        (7, 1, "CH-20A", "技术出版物设计", "董向明", "法规研制", "李四", "未完成", "XXX", "继续"),
-    ];
-
-    for row in rows {
-        let form = WeeklyLogForm {
-            meeting_month: row.0,
-            meeting_count: row.1,
-            project_id: option_id(conn, OptionKind::Project, row.2)?,
-            specialty_id: option_id(conn, OptionKind::Specialty, row.3)?,
-            module_owner_id: option_id(conn, OptionKind::Person, row.4)?,
-            last_work_item: row.5.to_string(),
-            completer_id: option_id(conn, OptionKind::Person, row.6)?,
-            progress: row.7.to_string(),
-            reason: row.8.to_string(),
-            next_work_item: row.9.to_string(),
-        };
-        insert_log(conn, &form)?;
-    }
-
-    Ok(())
-}
-
 fn validate_meeting(month: i64, count: i64) -> std::result::Result<(), String> {
     if !(1..=12).contains(&month) {
         return Err("月份必须在 1 到 12 之间。".to_string());
@@ -444,35 +382,6 @@ fn validate_meeting(month: i64, count: i64) -> std::result::Result<(), String> {
     if !(1..=20).contains(&count) {
         return Err("例会次数必须在 1 到 20 之间。".to_string());
     }
-    Ok(())
-}
-
-fn insert_log(conn: &Connection, form: &WeeklyLogForm) -> rusqlite::Result<()> {
-    let legacy_period = meeting_label(form.meeting_month, form.meeting_count);
-    conn.execute(
-        r#"
-        INSERT INTO weekly_logs
-        (start_date, end_date, meeting_month, meeting_count, project_id, specialty_id, module_owner_id, last_work_item,
-         completer_id, progress, reason, next_work_item, next_owner_id, created_at)
-        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)
-        "#,
-        params![
-            legacy_period,
-            legacy_period,
-            form.meeting_month,
-            form.meeting_count,
-            form.project_id,
-            form.specialty_id,
-            form.module_owner_id,
-            form.last_work_item.trim(),
-            form.completer_id,
-            form.progress.trim(),
-            form.reason.trim(),
-            form.next_work_item.trim(),
-            form.completer_id,
-            now_string()
-        ],
-    )?;
     Ok(())
 }
 
@@ -2130,7 +2039,6 @@ async fn specialties_delete(state: Data<AppState>, path: Path<i64>) -> Result<Ht
 async fn main() -> std::io::Result<()> {
     let conn = Connection::open(DB_PATH).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
     init_db(&conn).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
-    maybe_seed_sample(&conn).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
 
     let state = Data::new(AppState {
         conn: Mutex::new(conn),
