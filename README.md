@@ -63,22 +63,21 @@
 - Actix Web
 - rusqlite
 - SQLite
-- 服务端直接返回 HTML，不使用 Vue/React，不需要 Nginx/MySQL/Redis。
 
 ## 运行
 
 ```bash
 cargo run
 ```
-或直接下载本项目中编译好的绿色版
+或直接在本项目中的action自动化编译workflow中下载对应架构的绿色版
 
 启动后访问：
-
-- 填报端：<http://127.0.0.1:3000/fill/new>
-- 汇总端：<http://127.0.0.1:3000/summary>
-- 项目日志汇总：<http://127.0.0.1:3000/summary/project-report>
-- 填报统计：<http://127.0.0.1:3000/summary/attendance>
-- 选项维护：<http://127.0.0.1:3000/summary/options>
+访问端口修改为3001
+- 填报端：<http://127.0.0.1:3001/fill/new>
+- 汇总端：<http://127.0.0.1:3001/summary>
+- 项目日志汇总：<http://127.0.0.1:3001/summary/project-report>
+- 填报统计：<http://127.0.0.1:3001/summary/attendance>
+- 选项维护：<http://127.0.0.1:3001/summary/options>
 
 
 ## 部署
