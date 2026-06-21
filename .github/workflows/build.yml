@@ -46,11 +46,11 @@ jobs:
           ./start.sh
 
           访问地址：
-          填报端：http://服务器IP:3000/fill/new
-          汇总端：http://服务器IP:3000/summary
-          项目日志汇总：http://服务器IP:3000/summary/project-report
-          填报统计：http://服务器IP:3000/summary/attendance
-          选项维护：http://服务器IP:3000/summary/options
+          填报端：http://服务器IP:3001/fill/new
+          汇总端：http://服务器IP:3001/summary
+          项目日志汇总：http://服务器IP:3001/summary/project-report
+          填报统计：http://服务器IP:3001/summary/attendance
+          选项维护：http://服务器IP:3001/summary/options
 
           数据库文件 weekly_log.db 会在首次运行时自动生成。
           EOF
@@ -102,11 +102,11 @@ jobs:
           ./start.sh
 
           访问地址：
-          填报端：http://服务器IP:3000/fill/new
-          汇总端：http://服务器IP:3000/summary
-          项目日志汇总：http://服务器IP:3000/summary/project-report
-          填报统计：http://服务器IP:3000/summary/attendance
-          选项维护：http://服务器IP:3000/summary/options
+          填报端：http://服务器IP:3001/fill/new
+          汇总端：http://服务器IP:3001/summary
+          项目日志汇总：http://服务器IP:3001/summary/project-report
+          填报统计：http://服务器IP:3001/summary/attendance
+          选项维护：http://服务器IP:3001/summary/options
 
           数据库文件 weekly_log.db 会在首次运行时自动生成。
           EOF
