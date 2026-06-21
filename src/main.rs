@@ -2045,11 +2045,11 @@ async fn main() -> std::io::Result<()> {
     });
 
     println!("日志填报系统启动：");
-    println!("  填报端：http://127.0.0.1:3000/fill/new");
-    println!("  汇总端：http://127.0.0.1:3000/summary");
-    println!("  项目日志汇总：http://127.0.0.1:3000/summary/project-report");
-    println!("  填报统计：http://127.0.0.1:3000/summary/attendance");
-    println!("  选项维护：http://127.0.0.1:3000/summary/options");
+    println!("  填报端：http://127.0.0.1:3001/fill/new");
+    println!("  汇总端：http://127.0.0.1:3001/summary");
+    println!("  项目日志汇总：http://127.0.0.1:3001/summary/project-report");
+    println!("  填报统计：http://127.0.0.1:3001/summary/attendance");
+    println!("  选项维护：http://127.0.0.1:3001/summary/options");
 
     HttpServer::new(move || {
         App::new()
@@ -2079,7 +2079,7 @@ async fn main() -> std::io::Result<()> {
             .service(specialties_toggle)
             .service(specialties_delete)
     })
-    .bind(("0.0.0.0", 3000))?
+    .bind(("0.0.0.0", 3001))?
     .run()
     .await
 }
